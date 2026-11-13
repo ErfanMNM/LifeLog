@@ -184,6 +184,20 @@ class LocationServiceHelper(private val context: Context) {
         }
     }
 
+    suspend fun geocodeLocationName(placeName: String): Pair<Double, Double>? = withContext(Dispatchers.IO) {
+        if (placeName.isBlank()) return@withContext null
+        try {
+            val geocoder = Geocoder(context, Locale("vi", "VN"))
+            @Suppress("DEPRECATION")
+            val results = geocoder.getFromLocationName(placeName, 1)
+            if (!results.isNullOrEmpty()) {
+                val first = results[0]
+                return@withContext Pair(first.latitude, first.longitude)
+            }
+        } catch (_: Exception) {}
+        null
+    }
+
     companion object {
         fun calculateDistanceKm(
             lat1: Double,

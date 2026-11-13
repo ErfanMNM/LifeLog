@@ -847,35 +847,38 @@ class MainViewModel(
             val durationMs = (resolvedEndTime - startTime).coerceAtLeast(60_000L)
             val computedAvgSpeed = DateUtils.calculateAvgSpeedKmh(distanceKm, durationMs)
             val loc = _currentLocation.value
-            val startLat = loc?.latitude ?: 10.7769
-            val startLng = loc?.longitude ?: 106.7009
-            val offsetDeg = (distanceKm * 0.006).coerceIn(0.002, 0.25)
+            val geocodedStart = locationHelper.geocodeLocationName(startLocation.trim())
+            val geocodedEnd = locationHelper.geocodeLocationName(endLocation.trim())
 
-            val waypoints = if (distanceKm > 0.0) {
-                listOf(
-                    RouteWaypoint(
-                        latitude = startLat,
-                        longitude = startLng,
-                        timestamp = startTime,
-                        speedKmh = 0.0,
-                        label = "Xuất phát: ${startLocation.trim()}"
-                    ),
-                    RouteWaypoint(
-                        latitude = startLat + offsetDeg * 0.5,
-                        longitude = startLng + offsetDeg * 0.4,
-                        timestamp = startTime + durationMs / 2,
-                        speedKmh = computedAvgSpeed * 1.15,
-                        label = "Giữa tuyến đường"
-                    ),
-                    RouteWaypoint(
-                        latitude = startLat + offsetDeg,
-                        longitude = startLng + offsetDeg * 0.85,
-                        timestamp = resolvedEndTime,
-                        speedKmh = computedAvgSpeed,
-                        label = "Đích: ${endLocation.trim()}"
-                    )
+            val startLat = geocodedStart?.first ?: loc?.latitude ?: 10.7769
+            val startLng = geocodedStart?.second ?: loc?.longitude ?: 106.7009
+            val offsetDeg = (distanceKm.coerceAtLeast(1.5) * 0.006).coerceIn(0.004, 0.25)
+            val endLat = geocodedEnd?.first ?: (startLat + offsetDeg)
+            val endLng = geocodedEnd?.second ?: (startLng + offsetDeg * 0.85)
+
+            val waypoints = listOf(
+                RouteWaypoint(
+                    latitude = startLat,
+                    longitude = startLng,
+                    timestamp = startTime,
+                    speedKmh = 0.0,
+                    label = "Xuất phát: ${startLocation.trim()}"
+                ),
+                RouteWaypoint(
+                    latitude = (startLat + endLat) / 2.0 + 0.0012,
+                    longitude = (startLng + endLng) / 2.0 - 0.0008,
+                    timestamp = startTime + durationMs / 2,
+                    speedKmh = computedAvgSpeed * 1.12,
+                    label = "Giữa tuyến đường"
+                ),
+                RouteWaypoint(
+                    latitude = endLat,
+                    longitude = endLng,
+                    timestamp = resolvedEndTime,
+                    speedKmh = computedAvgSpeed,
+                    label = "Đích: ${endLocation.trim()}"
                 )
-            } else emptyList()
+            )
 
             val trip = Trip(
                 title = title.trim(),
@@ -891,8 +894,8 @@ class MainViewModel(
                 status = "COMPLETED",
                 startLatitude = startLat,
                 startLongitude = startLng,
-                endLatitude = startLat + offsetDeg,
-                endLongitude = startLng + offsetDeg * 0.85,
+                endLatitude = endLat,
+                endLongitude = endLng,
                 tagName = tagName.trim(),
                 avgSpeedKmh = computedAvgSpeed,
                 maxSpeedKmh = (computedAvgSpeed * 1.25).coerceAtMost(120.0),

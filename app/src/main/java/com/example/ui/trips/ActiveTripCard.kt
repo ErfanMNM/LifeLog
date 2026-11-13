@@ -168,7 +168,9 @@ fun ActiveTripCard(
                 startLabel = activeTrip.startLocation,
                 endLabel = waypoints.lastOrNull()?.label?.ifBlank { "Đang di chuyển" } ?: "Đang di chuyển",
                 isLiveTracking = true,
-                modifier = Modifier.height(135.dp)
+                startLat = activeTrip.startLatitude,
+                startLng = activeTrip.startLongitude,
+                modifier = Modifier.height(185.dp)
             )
 
             Spacer(modifier = Modifier.height(10.dp))
