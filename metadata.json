@@ -1,0 +1,6 @@
+{
+  "name": "LifeLog",
+  "description": "Ứng dụng quản lý cá nhân: Ghi chú, nhật ký di chuyển & lộ trình, chụp ảnh đóng dấu timestamp.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
